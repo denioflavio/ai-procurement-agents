@@ -1,0 +1,71 @@
+page 5 (
+    name: Procurement AI Assistant
+    alias: PROCUREMENT-AI-ASSISTANT
+    title: Procurement AI Assistant
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    security {
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+        authorizationScheme: mustNotBePublicUser
+    }
+
+    region assistant-host (
+        name: Procurement Assistant
+        type: staticContent
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+        advanced {
+            htmlDomId: procurement-assistant-host
+        }
+    )
+
+    button open-assistant (
+        buttonName: OPEN_ASSISTANT
+        label: Open Assistant
+        layout {
+            sequence: 10
+            region: @assistant-host
+            slot: next
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            templateOptions: #DEFAULT#
+            icon: fa-comments-o
+        }
+        behavior {
+            action: definedByDynamicAction
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    dynamicAction show-procurement-assistant (
+        name: Show Procurement Assistant
+        execution {
+            sequence: 10
+        }
+        when {
+            event: click
+            selectionType: button
+            button: @open-assistant
+        }
+        action show-ai-assistant (
+            action: showAiAssistant
+            genAI {
+                agent: @procurement_assistant_agent
+            }
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+    )
+)

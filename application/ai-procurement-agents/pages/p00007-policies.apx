@@ -1,0 +1,170 @@
+page 7 (
+    name: Policies
+    alias: POLICIES
+    title: Policies
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    security {
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+        authorizationScheme: mustNotBePublicUser
+    }
+
+    region policies (
+        name: Procurement Policies
+        type: interactiveReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select policy_code,
+                       policy_name,
+                       severity,
+                       rule_type,
+                       threshold_amount,
+                       category,
+                       policy_text,
+                       recommended_resolution,
+                       is_active
+                  from aipa_procurement_policies
+                 order by severity desc, policy_code
+                ```
+        }
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+        column POLICY_CODE (
+            type: plainText
+            heading {
+                heading: Code
+            }
+            layout {
+                sequence: 10
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column POLICY_NAME (
+            type: plainText
+            heading {
+                heading: Policy
+            }
+            layout {
+                sequence: 20
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column SEVERITY (
+            type: plainText
+            heading {
+                heading: Severity
+            }
+            layout {
+                sequence: 30
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column RULE_TYPE (
+            type: plainText
+            heading {
+                heading: Rule Type
+            }
+            layout {
+                sequence: 40
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column THRESHOLD_AMOUNT (
+            type: plainText
+            heading {
+                heading: Threshold
+            }
+            layout {
+                sequence: 50
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+        column CATEGORY (
+            type: plainText
+            heading {
+                heading: Category
+            }
+            layout {
+                sequence: 60
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column POLICY_TEXT (
+            type: plainText
+            heading {
+                heading: Policy Text
+            }
+            layout {
+                sequence: 70
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column RECOMMENDED_RESOLUTION (
+            type: plainText
+            heading {
+                heading: Resolution
+            }
+            layout {
+                sequence: 80
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column IS_ACTIVE (
+            type: plainText
+            heading {
+                heading: Active
+            }
+            layout {
+                sequence: 90
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+
+        savedReport primary (
+            visibility: primaryDefault
+            name: Primary Report
+            view {
+                rowsPerPage: 25
+            }
+        )
+    )
+)

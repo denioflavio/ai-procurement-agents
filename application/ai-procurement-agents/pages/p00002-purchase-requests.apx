@@ -1,0 +1,212 @@
+page 2 (
+    name: Purchase Requests
+    alias: PURCHASE-REQUESTS
+    title: Purchase Requests
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    security {
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+        authorizationScheme: mustNotBePublicUser
+    }
+
+    region purchase-requests (
+        name: Purchase Requests
+        type: interactiveReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select pr.purchase_request_id,
+                       pr.request_number,
+                       pr.title,
+                       e.full_name as requester,
+                       d.department_name as department,
+                       v.vendor_name as vendor,
+                       pr.status,
+                       pr.risk_level,
+                       pr.total_amount,
+                       pr.currency_code,
+                       pr.requested_date
+                  from aipa_purchase_requests pr
+                  join aipa_employees e on e.employee_id = pr.requester_id
+                  join aipa_departments d on d.department_id = pr.department_id
+                  left join aipa_vendors v on v.vendor_id = pr.vendor_id
+                 order by pr.request_number
+                ```
+        }
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+        column PURCHASE_REQUEST_ID (
+            type: plainText
+            heading {
+                heading: ID
+            }
+            layout {
+                sequence: 10
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+        column REQUEST_NUMBER (
+            type: plainText
+            heading {
+                heading: Request
+            }
+            layout {
+                sequence: 20
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column TITLE (
+            type: plainText
+            heading {
+                heading: Title
+            }
+            layout {
+                sequence: 30
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column REQUESTER (
+            type: plainText
+            heading {
+                heading: Requester
+            }
+            layout {
+                sequence: 40
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column DEPARTMENT (
+            type: plainText
+            heading {
+                heading: Department
+            }
+            layout {
+                sequence: 50
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column VENDOR (
+            type: plainText
+            heading {
+                heading: Vendor
+            }
+            layout {
+                sequence: 60
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column STATUS (
+            type: plainText
+            heading {
+                heading: Status
+            }
+            layout {
+                sequence: 70
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column RISK_LEVEL (
+            type: plainText
+            heading {
+                heading: Risk
+            }
+            layout {
+                sequence: 80
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column TOTAL_AMOUNT (
+            type: plainText
+            heading {
+                heading: Amount
+            }
+            layout {
+                sequence: 90
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+        column CURRENCY_CODE (
+            type: plainText
+            heading {
+                heading: Currency
+            }
+            layout {
+                sequence: 100
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column REQUESTED_DATE (
+            type: plainText
+            heading {
+                heading: Requested
+            }
+            layout {
+                sequence: 110
+            }
+            source {
+                dataType: DATE
+            }
+        )
+
+
+        link {
+            linkColumn: customTarget
+            target: {
+                page: 4
+                items: {
+                    P4_PURCHASE_REQUEST_ID: PURCHASE_REQUEST_ID
+                }
+                clearCache: 4
+            }
+            linkIcon: fa-eye
+        }
+        savedReport primary (
+            visibility: primaryDefault
+            name: Primary Report
+            view {
+                rowsPerPage: 25
+            }
+        )
+    )
+)

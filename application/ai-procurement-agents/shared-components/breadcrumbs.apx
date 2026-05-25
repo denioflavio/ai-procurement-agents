@@ -1,0 +1,42 @@
+breadcrumb breadcrumb (
+    name: Breadcrumb
+
+    entry home (
+        name: Dashboard
+        pageNumber: 1
+        execution {
+            sequence: 10
+        }
+        link {
+            target: {
+                page: 1
+            }
+        }
+    )
+
+    entry purchase-requests (
+        name: Purchase Requests
+        pageNumber: 2
+        execution {
+            sequence: 20
+        }
+        link {
+            target: {
+                page: 2
+            }
+        }
+    )
+
+    entry assistant (
+        name: Procurement AI Assistant
+        pageNumber: 5
+        execution {
+            sequence: 50
+        }
+        link {
+            target: {
+                page: 5
+            }
+        }
+    )
+)

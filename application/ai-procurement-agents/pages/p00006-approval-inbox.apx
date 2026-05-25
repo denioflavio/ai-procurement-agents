@@ -1,0 +1,178 @@
+page 6 (
+    name: Approval Inbox
+    alias: APPROVAL-INBOX
+    title: Approval Inbox
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    security {
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+        authorizationScheme: mustNotBePublicUser
+    }
+
+    region approval-inbox (
+        name: Pending Approvals
+        type: interactiveReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select s.approval_step_id,
+                       pr.request_number,
+                       pr.title,
+                       pr.status,
+                       pr.risk_level,
+                       pr.total_amount,
+                       e.full_name as approver,
+                       rec.recommended_action,
+                       rec.summary as ai_summary
+                  from aipa_approval_steps s
+                  join aipa_purchase_requests pr on pr.purchase_request_id = s.purchase_request_id
+                  join aipa_employees e on e.employee_id = s.approver_id
+                  left join (
+                      select purchase_request_id, summary, recommended_action,
+                             row_number() over (partition by purchase_request_id order by created_at desc) rn
+                        from aipa_agent_recommendations
+                  ) rec on rec.purchase_request_id = pr.purchase_request_id and rec.rn = 1
+                 where s.status = 'PENDING_APPROVAL'
+                 order by pr.risk_level desc, pr.total_amount desc
+                ```
+        }
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+        column APPROVAL_STEP_ID (
+            type: plainText
+            heading {
+                heading: Step ID
+            }
+            layout {
+                sequence: 10
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+        column REQUEST_NUMBER (
+            type: plainText
+            heading {
+                heading: Request
+            }
+            layout {
+                sequence: 20
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column TITLE (
+            type: plainText
+            heading {
+                heading: Title
+            }
+            layout {
+                sequence: 30
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column STATUS (
+            type: plainText
+            heading {
+                heading: Status
+            }
+            layout {
+                sequence: 40
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column RISK_LEVEL (
+            type: plainText
+            heading {
+                heading: Risk
+            }
+            layout {
+                sequence: 50
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column TOTAL_AMOUNT (
+            type: plainText
+            heading {
+                heading: Amount
+            }
+            layout {
+                sequence: 60
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+        column APPROVER (
+            type: plainText
+            heading {
+                heading: Approver
+            }
+            layout {
+                sequence: 70
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column RECOMMENDED_ACTION (
+            type: plainText
+            heading {
+                heading: Recommended Action
+            }
+            layout {
+                sequence: 80
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column AI_SUMMARY (
+            type: plainText
+            heading {
+                heading: AI Summary
+            }
+            layout {
+                sequence: 90
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+
+        savedReport primary (
+            visibility: primaryDefault
+            name: Primary Report
+            view {
+                rowsPerPage: 25
+            }
+        )
+    )
+)

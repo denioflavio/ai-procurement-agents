@@ -1,0 +1,327 @@
+page 8 (
+    name: Agent Runs Audit
+    alias: AGENT-RUNS-AUDIT
+    title: Agent Runs Audit
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    security {
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+        authorizationScheme: mustNotBePublicUser
+    }
+
+    region agent-runs (
+        name: Agent Runs
+        type: interactiveReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select r.agent_run_id,
+                       pr.request_number,
+                       r.agent_static_id,
+                       r.status,
+                       r.mode,
+                       r.provider_name,
+                       r.model_name,
+                       r.started_at,
+                       r.ended_at,
+                       r.duration_ms,
+                       r.error_message
+                  from aipa_agent_runs r
+                  left join aipa_purchase_requests pr on pr.purchase_request_id = r.purchase_request_id
+                 order by r.started_at desc
+                ```
+        }
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+        column AGENT_RUN_ID (
+            type: plainText
+            heading {
+                heading: Run ID
+            }
+            layout {
+                sequence: 10
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+        column REQUEST_NUMBER (
+            type: plainText
+            heading {
+                heading: Request
+            }
+            layout {
+                sequence: 20
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column AGENT_STATIC_ID (
+            type: plainText
+            heading {
+                heading: Agent
+            }
+            layout {
+                sequence: 30
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column STATUS (
+            type: plainText
+            heading {
+                heading: Status
+            }
+            layout {
+                sequence: 40
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column MODE (
+            type: plainText
+            heading {
+                heading: Mode
+            }
+            layout {
+                sequence: 50
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column PROVIDER_NAME (
+            type: plainText
+            heading {
+                heading: Provider
+            }
+            layout {
+                sequence: 60
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column MODEL_NAME (
+            type: plainText
+            heading {
+                heading: Model
+            }
+            layout {
+                sequence: 70
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column STARTED_AT (
+            type: plainText
+            heading {
+                heading: Started
+            }
+            layout {
+                sequence: 80
+            }
+            source {
+                dataType: DATE
+            }
+        )
+
+        column ENDED_AT (
+            type: plainText
+            heading {
+                heading: Ended
+            }
+            layout {
+                sequence: 90
+            }
+            source {
+                dataType: DATE
+            }
+        )
+
+        column DURATION_MS (
+            type: plainText
+            heading {
+                heading: Duration ms
+            }
+            layout {
+                sequence: 100
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+        column ERROR_MESSAGE (
+            type: plainText
+            heading {
+                heading: Error
+            }
+            layout {
+                sequence: 110
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+
+        savedReport primary (
+            visibility: primaryDefault
+            name: Primary Report
+            view {
+                rowsPerPage: 25
+            }
+        )
+    )
+
+    region tool-calls (
+        name: Tool Calls
+        type: interactiveReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select c.agent_tool_call_id,
+                       c.agent_run_id,
+                       c.tool_name,
+                       c.status,
+                       c.started_at,
+                       c.duration_ms,
+                       c.error_message
+                  from aipa_agent_tool_calls c
+                 order by c.started_at desc
+                ```
+        }
+        layout {
+            sequence: 20
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+        column AGENT_TOOL_CALL_ID (
+            type: plainText
+            heading {
+                heading: Tool Call ID
+            }
+            layout {
+                sequence: 10
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+        column AGENT_RUN_ID (
+            type: plainText
+            heading {
+                heading: Run ID
+            }
+            layout {
+                sequence: 20
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+        column TOOL_NAME (
+            type: plainText
+            heading {
+                heading: Tool
+            }
+            layout {
+                sequence: 30
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column STATUS (
+            type: plainText
+            heading {
+                heading: Status
+            }
+            layout {
+                sequence: 40
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column STARTED_AT (
+            type: plainText
+            heading {
+                heading: Started
+            }
+            layout {
+                sequence: 50
+            }
+            source {
+                dataType: DATE
+            }
+        )
+
+        column DURATION_MS (
+            type: plainText
+            heading {
+                heading: Duration ms
+            }
+            layout {
+                sequence: 60
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+        column ERROR_MESSAGE (
+            type: plainText
+            heading {
+                heading: Error
+            }
+            layout {
+                sequence: 70
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+
+        savedReport primary (
+            visibility: primaryDefault
+            name: Primary Report
+            view {
+                rowsPerPage: 25
+            }
+        )
+    )
+)

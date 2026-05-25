@@ -1,0 +1,221 @@
+page 1 (
+    name: Dashboard
+    alias: HOME
+    title: AI Procurement Agents
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    navigation {
+        cursorFocus: doNotFocusCursor
+    }
+    security {
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+        authorizationScheme: mustNotBePublicUser
+    }
+
+    region dashboard-metrics (
+        name: Procurement Dashboard
+        type: interactiveReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select 'Total Requests' metric, count(*) metric_value from aipa_purchase_requests
+                union all
+                select 'Pending Approvals', count(*) from aipa_purchase_requests where status = 'PENDING_APPROVAL'
+                union all
+                select 'Approved Amount', nvl(sum(total_amount),0) from aipa_purchase_requests where status = 'APPROVED'
+                union all
+                select 'High Risk Requests', count(*) from aipa_purchase_requests where risk_level = 'HIGH'
+                ```
+        }
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+        column METRIC (
+            type: plainText
+            heading {
+                heading: Metric
+            }
+            layout {
+                sequence: 10
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column METRIC_VALUE (
+            type: plainText
+            heading {
+                heading: Value
+            }
+            layout {
+                sequence: 20
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+
+        savedReport primary (
+            visibility: primaryDefault
+            name: Primary Report
+            view {
+                rowsPerPage: 10
+            }
+        )
+    )
+
+    region recent-agent-activity (
+        name: Recent Agent Activity
+        type: interactiveReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select r.agent_run_id,
+                       pr.request_number,
+                       r.agent_static_id,
+                       r.status,
+                       r.mode,
+                       r.model_name,
+                       r.started_at,
+                       r.duration_ms
+                  from aipa_agent_runs r
+                  left join aipa_purchase_requests pr on pr.purchase_request_id = r.purchase_request_id
+                 order by r.started_at desc
+                ```
+        }
+        layout {
+            sequence: 20
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+        column AGENT_RUN_ID (
+            type: plainText
+            heading {
+                heading: Run ID
+            }
+            layout {
+                sequence: 10
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+        column REQUEST_NUMBER (
+            type: plainText
+            heading {
+                heading: Request
+            }
+            layout {
+                sequence: 20
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column AGENT_STATIC_ID (
+            type: plainText
+            heading {
+                heading: Agent
+            }
+            layout {
+                sequence: 30
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column STATUS (
+            type: plainText
+            heading {
+                heading: Status
+            }
+            layout {
+                sequence: 40
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column MODE (
+            type: plainText
+            heading {
+                heading: Mode
+            }
+            layout {
+                sequence: 50
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column MODEL_NAME (
+            type: plainText
+            heading {
+                heading: Model
+            }
+            layout {
+                sequence: 60
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column STARTED_AT (
+            type: plainText
+            heading {
+                heading: Started
+            }
+            layout {
+                sequence: 70
+            }
+            source {
+                dataType: DATE
+            }
+        )
+
+        column DURATION_MS (
+            type: plainText
+            heading {
+                heading: Duration ms
+            }
+            layout {
+                sequence: 80
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+
+        savedReport primary (
+            visibility: primaryDefault
+            name: Primary Report
+            view {
+                rowsPerPage: 10
+            }
+        )
+    )
+)

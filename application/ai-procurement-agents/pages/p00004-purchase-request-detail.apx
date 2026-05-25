@@ -1,0 +1,358 @@
+page 4 (
+    name: Purchase Request Detail
+    alias: PURCHASE-REQUEST-DETAIL
+    title: Purchase Request Detail
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    security {
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+        authorizationScheme: mustNotBePublicUser
+    }
+
+    pageItem P4_PURCHASE_REQUEST_ID (
+        type: hidden
+        sessionState {
+            storage: session
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+
+    region request-summary (
+        name: Request Summary
+        type: interactiveReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select pr.request_number,
+                       pr.title,
+                       pr.status,
+                       pr.risk_level,
+                       pr.total_amount,
+                       e.full_name as requester,
+                       d.department_name as department,
+                       v.vendor_name as vendor
+                  from aipa_purchase_requests pr
+                  join aipa_employees e on e.employee_id = pr.requester_id
+                  join aipa_departments d on d.department_id = pr.department_id
+                  left join aipa_vendors v on v.vendor_id = pr.vendor_id
+                 where pr.purchase_request_id = :P4_PURCHASE_REQUEST_ID
+                ```
+        }
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+        column REQUEST_NUMBER (
+            type: plainText
+            heading {
+                heading: Request
+            }
+            layout {
+                sequence: 10
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column TITLE (
+            type: plainText
+            heading {
+                heading: Title
+            }
+            layout {
+                sequence: 20
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column STATUS (
+            type: plainText
+            heading {
+                heading: Status
+            }
+            layout {
+                sequence: 30
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column RISK_LEVEL (
+            type: plainText
+            heading {
+                heading: Risk
+            }
+            layout {
+                sequence: 40
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column TOTAL_AMOUNT (
+            type: plainText
+            heading {
+                heading: Amount
+            }
+            layout {
+                sequence: 50
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+        column REQUESTER (
+            type: plainText
+            heading {
+                heading: Requester
+            }
+            layout {
+                sequence: 60
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column DEPARTMENT (
+            type: plainText
+            heading {
+                heading: Department
+            }
+            layout {
+                sequence: 70
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column VENDOR (
+            type: plainText
+            heading {
+                heading: Vendor
+            }
+            layout {
+                sequence: 80
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+
+        savedReport primary (
+            visibility: primaryDefault
+            name: Primary Report
+            view {
+                rowsPerPage: 5
+            }
+        )
+    )
+
+    region ai-recommendation (
+        name: AI Agent Recommendation
+        type: interactiveReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select summary,
+                       risk_level,
+                       recommended_action,
+                       requires_confirmation,
+                       created_at
+                  from aipa_agent_recommendations
+                 where purchase_request_id = :P4_PURCHASE_REQUEST_ID
+                 order by created_at desc
+                ```
+        }
+        layout {
+            sequence: 20
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+        column SUMMARY (
+            type: plainText
+            heading {
+                heading: Summary
+            }
+            layout {
+                sequence: 10
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column RISK_LEVEL (
+            type: plainText
+            heading {
+                heading: Risk
+            }
+            layout {
+                sequence: 20
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column RECOMMENDED_ACTION (
+            type: plainText
+            heading {
+                heading: Recommended Action
+            }
+            layout {
+                sequence: 30
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column REQUIRES_CONFIRMATION (
+            type: plainText
+            heading {
+                heading: Confirmation
+            }
+            layout {
+                sequence: 40
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column CREATED_AT (
+            type: plainText
+            heading {
+                heading: Created
+            }
+            layout {
+                sequence: 50
+            }
+            source {
+                dataType: DATE
+            }
+        )
+
+
+        savedReport primary (
+            visibility: primaryDefault
+            name: Primary Report
+            view {
+                rowsPerPage: 5
+            }
+        )
+    )
+
+    region latest-tool-calls (
+        name: Latest Tool Calls
+        type: interactiveReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select c.tool_name,
+                       c.status,
+                       c.started_at,
+                       c.duration_ms
+                  from aipa_agent_tool_calls c
+                  join aipa_agent_runs r on r.agent_run_id = c.agent_run_id
+                 where r.purchase_request_id = :P4_PURCHASE_REQUEST_ID
+                 order by c.started_at desc
+                ```
+        }
+        layout {
+            sequence: 30
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+        column TOOL_NAME (
+            type: plainText
+            heading {
+                heading: Tool
+            }
+            layout {
+                sequence: 10
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column STATUS (
+            type: plainText
+            heading {
+                heading: Status
+            }
+            layout {
+                sequence: 20
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column STARTED_AT (
+            type: plainText
+            heading {
+                heading: Started
+            }
+            layout {
+                sequence: 30
+            }
+            source {
+                dataType: DATE
+            }
+        )
+
+        column DURATION_MS (
+            type: plainText
+            heading {
+                heading: Duration ms
+            }
+            layout {
+                sequence: 40
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+
+        savedReport primary (
+            visibility: primaryDefault
+            name: Primary Report
+            view {
+                rowsPerPage: 10
+            }
+        )
+    )
+)

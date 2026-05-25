@@ -1,0 +1,100 @@
+page 9 (
+    name: Settings
+    alias: SETTINGS
+    title: Settings
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    security {
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+        authorizationScheme: mustNotBePublicUser
+    }
+
+    region app-settings (
+        name: Demo Settings
+        type: interactiveReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select setting_name,
+                       case when is_secret = 'Y' then 'Not displayed' else setting_value end setting_value,
+                       setting_description,
+                       is_secret
+                  from aipa_app_settings
+                 order by setting_name
+                ```
+        }
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+        column SETTING_NAME (
+            type: plainText
+            heading {
+                heading: Setting
+            }
+            layout {
+                sequence: 10
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column SETTING_VALUE (
+            type: plainText
+            heading {
+                heading: Value
+            }
+            layout {
+                sequence: 20
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column SETTING_DESCRIPTION (
+            type: plainText
+            heading {
+                heading: Description
+            }
+            layout {
+                sequence: 30
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column IS_SECRET (
+            type: plainText
+            heading {
+                heading: Secret
+            }
+            layout {
+                sequence: 40
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+
+        savedReport primary (
+            visibility: primaryDefault
+            name: Primary Report
+            view {
+                rowsPerPage: 25
+            }
+        )
+    )
+)

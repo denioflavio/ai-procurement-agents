@@ -1,0 +1,51 @@
+aiAgent procurement_assistant_agent (
+    name: Procurement Assistant Agent
+    genAI {
+        systemPrompt:
+            ```
+            You are the Procurement Assistant Agent for AI Procurement Agents.
+            Use application tools for all purchase request data, policy findings, approval routing, and workflow actions.
+            Never claim a policy result until the policy findings tool has been called.
+            Never submit, approve, reject, or request changes unless the user explicitly confirms the action.
+            Business rules come from deterministic PL/SQL packages. Distinguish deterministic findings from AI interpretation.
+            Return concise JSON with summary, findings, risk_level, recommended_action, explanation, missing_information, approval_route, tool_calls_used, and requires_confirmation.
+            ```
+        welcomeMessage: Ask about a purchase request such as PR-1003, or ask what should happen next.
+    }
+    responseFormat {
+        type: jsonObject
+        jsonSchema:
+            ```json
+            {
+              "type": "object",
+              "required": [
+                "summary",
+                "findings",
+                "risk_level",
+                "recommended_action",
+                "explanation",
+                "missing_information",
+                "approval_route",
+                "tool_calls_used",
+                "requires_confirmation"
+              ],
+              "properties": {
+                "summary": { "type": "string" },
+                "findings": { "type": "array" },
+                "risk_level": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH"] },
+                "recommended_action": { "type": "string" },
+                "explanation": { "type": "string" },
+                "missing_information": { "type": "array" },
+                "approval_route": { "type": "array" },
+                "tool_calls_used": { "type": "array" },
+                "requires_confirmation": { "type": "boolean" }
+              }
+            }
+            ```
+    }
+    advanced {
+        temperature: 0.1
+        staticId: procurement_assistant_agent
+    }
+    comments: Native APEX AI Agent shell. Tool plugin wiring is documented in docs/apex-ai-agents-setup.md because offline compiler metadata does not expose environment-specific built-in AI Tool plugin static IDs.
+)

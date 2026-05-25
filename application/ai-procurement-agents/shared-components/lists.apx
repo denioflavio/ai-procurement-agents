@@ -1,0 +1,151 @@
+list navigation-bar (
+    name: Navigation Bar
+
+    entry app-user (
+        label: &APP_USER.
+        icon {
+            imageIconCssClasses: fa-user
+        }
+        layout {
+            sequence: 10
+        }
+        link {
+            target: {
+                type: url
+                url: #
+            }
+        }
+        userDefinedAttributes {
+            2: has-username
+        }
+    )
+
+    entry sign-out (
+        label: Sign Out
+        icon {
+            imageIconCssClasses: fa-sign-out
+        }
+        layout {
+            sequence: 30
+            parentEntry: @app-user
+        }
+        link {
+            target: {
+                type: url
+                url: &LOGOUT_URL.
+            }
+        }
+        serverSideCondition {
+            type: userIsAuthenticated
+        }
+    )
+)
+
+list navigation-menu (
+    name: Navigation Menu
+
+    entry home (
+        label: Dashboard
+        icon {
+            imageIconCssClasses: fa-dashboard
+        }
+        layout {
+            sequence: 10
+        }
+        link {
+            target: {
+                page: 1
+            }
+        }
+    )
+
+    entry purchase-requests (
+        label: Purchase Requests
+        icon {
+            imageIconCssClasses: fa-file-text-o
+        }
+        layout {
+            sequence: 20
+        }
+        link {
+            target: {
+                page: 2
+            }
+        }
+    )
+
+    entry assistant (
+        label: Procurement AI Assistant
+        icon {
+            imageIconCssClasses: fa-comments-o
+        }
+        layout {
+            sequence: 30
+        }
+        link {
+            target: {
+                page: 5
+            }
+        }
+    )
+
+    entry approval-inbox (
+        label: Approval Inbox
+        icon {
+            imageIconCssClasses: fa-check-square-o
+        }
+        layout {
+            sequence: 40
+        }
+        link {
+            target: {
+                page: 6
+            }
+        }
+    )
+
+    entry policies (
+        label: Policies
+        icon {
+            imageIconCssClasses: fa-shield
+        }
+        layout {
+            sequence: 50
+        }
+        link {
+            target: {
+                page: 7
+            }
+        }
+    )
+
+    entry audit (
+        label: Agent Runs Audit
+        icon {
+            imageIconCssClasses: fa-history
+        }
+        layout {
+            sequence: 60
+        }
+        link {
+            target: {
+                page: 8
+            }
+        }
+    )
+
+    entry settings (
+        label: Settings
+        icon {
+            imageIconCssClasses: fa-cog
+        }
+        layout {
+            sequence: 70
+        }
+        link {
+            target: {
+                page: 9
+            }
+        }
+    )
+)

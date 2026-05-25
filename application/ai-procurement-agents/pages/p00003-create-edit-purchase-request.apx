@@ -1,0 +1,198 @@
+page 3 (
+    name: Create / Edit Purchase Request
+    alias: EDIT-PURCHASE-REQUEST
+    title: Create / Edit Purchase Request
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    security {
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+        authorizationScheme: mustNotBePublicUser
+    }
+
+    region request-form (
+        name: Request Header
+        type: form
+        source {
+            location: localDatabase
+            tableName: AIPA_PURCHASE_REQUESTS
+        }
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+        edit {
+            enabled: true
+            add: true
+            update: true
+            delete: false
+        }
+    )
+
+    pageItem P3_PURCHASE_REQUEST_ID (
+        type: hidden
+        layout {
+            sequence: 10
+            region: @request-form
+            slot: regionBody
+        }
+        source {
+            formRegion: @request-form
+            column: PURCHASE_REQUEST_ID
+            dataType: NUMBER
+            primaryKey: true
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+
+    region request-lines (
+        name: Request Lines
+        type: interactiveReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select line_id,
+                       purchase_request_id,
+                       line_number,
+                       item_description,
+                       category,
+                       quantity,
+                       unit_price,
+                       line_amount
+                  from aipa_purchase_request_lines
+                 where purchase_request_id = :P3_PURCHASE_REQUEST_ID
+                 order by line_number
+                ```
+        }
+        layout {
+            sequence: 20
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+        column LINE_ID (
+            type: plainText
+            heading {
+                heading: Line ID
+            }
+            layout {
+                sequence: 10
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+        column PURCHASE_REQUEST_ID (
+            type: plainText
+            heading {
+                heading: Request ID
+            }
+            layout {
+                sequence: 20
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+        column LINE_NUMBER (
+            type: plainText
+            heading {
+                heading: Line
+            }
+            layout {
+                sequence: 30
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+        column ITEM_DESCRIPTION (
+            type: plainText
+            heading {
+                heading: Description
+            }
+            layout {
+                sequence: 40
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column CATEGORY (
+            type: plainText
+            heading {
+                heading: Category
+            }
+            layout {
+                sequence: 50
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column QUANTITY (
+            type: plainText
+            heading {
+                heading: Quantity
+            }
+            layout {
+                sequence: 60
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+        column UNIT_PRICE (
+            type: plainText
+            heading {
+                heading: Unit Price
+            }
+            layout {
+                sequence: 70
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+        column LINE_AMOUNT (
+            type: plainText
+            heading {
+                heading: Line Amount
+            }
+            layout {
+                sequence: 80
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+
+        savedReport primary (
+            visibility: primaryDefault
+            name: Primary Report
+            view {
+                rowsPerPage: 10
+            }
+        )
+    )
+)
