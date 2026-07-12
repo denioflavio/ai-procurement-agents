@@ -9,7 +9,7 @@ The app models a small purchase request workflow. A requester creates a request,
 - Target APEX workspace: `APEXFROMTHEFIELD`
 - Parsing/application schema: `AIPA`
 - Target platform: Oracle APEX 26.1 on Autonomous Database
-- LLM provider setting: OpenAI `GPT-5.5`
+- LLM provider setting: existing Generative AI Service `OPENAI`, OpenAI `gpt-5.4`
 - Default public mode: deterministic mock mode, no secrets required
 - APEX app artifacts: `application/ai-procurement-agents/`
 - Database install artifacts: `database/`
@@ -57,7 +57,7 @@ select setting_value
 
 Mock mode persists agent runs, messages, tool calls, and recommendations so the demo is fully usable without OpenAI credentials.
 
-For live mode, configure an APEX Generative AI Service for OpenAI GPT-5.5 and an APEX credential in Builder. Store only the credential static ID or reference name in settings. Never store API keys in this repository.
+For live mode, select the existing `OPENAI` Generative AI Service configured for OpenAI `gpt-5.4` and its APEX credential in Builder. Store only the credential static ID or reference name in settings. Never store API keys in this repository.
 
 ## Verification
 
@@ -72,7 +72,14 @@ Database checks after install:
 ```sql
 select status, count(*) from aipa_purchase_requests group by status;
 select * from table(json_table(pk_aipa_policy_engine.get_findings_json(1), '$[*]' columns finding_code varchar2(60) path '$.finding_code'));
-select pk_aipa_agent_orchestration.run_ai_review(1) from dual;
+declare
+    l_response clob;
+begin
+    l_response := pk_aipa_agent_orchestration.run_ai_review(1);
+    dbms_output.put_line(dbms_lob.substr(l_response, 4000, 1));
+    commit;
+end;
+/
 ```
 
 ## Safety Notes

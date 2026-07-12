@@ -43,7 +43,6 @@ page 5 (
         }
         behavior {
             action: definedByDynamicAction
-            warnOnUnsavedChanges: doNotCheck
         }
     )
 

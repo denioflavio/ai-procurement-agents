@@ -29,9 +29,6 @@ page 3 (
         }
         edit {
             enabled: true
-            add: true
-            update: true
-            delete: false
         }
     )
 
@@ -45,7 +42,7 @@ page 3 (
         source {
             formRegion: @request-form
             column: PURCHASE_REQUEST_ID
-            dataType: NUMBER
+            dataType: number
             primaryKey: true
         }
         security {
@@ -189,7 +186,6 @@ page 3 (
 
         savedReport primary (
             visibility: primaryDefault
-            name: Primary Report
             view {
                 rowsPerPage: 10
             }

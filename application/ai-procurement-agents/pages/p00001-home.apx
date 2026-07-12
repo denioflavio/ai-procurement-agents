@@ -69,7 +69,6 @@ page 1 (
 
         savedReport primary (
             visibility: primaryDefault
-            name: Primary Report
             view {
                 rowsPerPage: 10
             }
@@ -88,7 +87,7 @@ page 1 (
                        pr.request_number,
                        r.agent_static_id,
                        r.status,
-                       r.mode,
+                       r.run_mode as mode,
                        r.model_name,
                        r.started_at,
                        r.duration_ms
@@ -100,6 +99,7 @@ page 1 (
         layout {
             sequence: 20
             slot: body
+            startNewRow: false
         }
         appearance {
             template: @/standard
@@ -212,7 +212,6 @@ page 1 (
 
         savedReport primary (
             visibility: primaryDefault
-            name: Primary Report
             view {
                 rowsPerPage: 10
             }

@@ -1,5 +1,11 @@
 prompt Creating AIPA schema when run as an administrative user
 
+whenever sqlerror exit sql.sqlcode rollback
+
+set verify off
+
+accept aipa_password char prompt 'Temporary password for AIPA: ' hide
+
 declare
     l_count number;
 begin
@@ -10,7 +16,7 @@ begin
 
     if l_count = 0 then
         execute immediate q'[
-            create user AIPA identified by "ChangeMe_See_README_26"
+            create user AIPA identified by "&&aipa_password"
             default tablespace DATA
             temporary tablespace TEMP
             quota unlimited on DATA
@@ -27,4 +33,6 @@ grant create procedure to AIPA;
 grant create trigger to AIPA;
 grant create type to AIPA;
 
-prompt AIPA schema is ready. Change the password before production use.
+undefine aipa_password
+
+prompt AIPA schema is ready. Keep its password outside the repository.

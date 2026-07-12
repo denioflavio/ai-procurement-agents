@@ -14,6 +14,10 @@ page 4 (
 
     pageItem P4_PURCHASE_REQUEST_ID (
         type: hidden
+        layout {
+            sequence: 10
+            slot: body
+        }
         sessionState {
             storage: session
         }
@@ -160,7 +164,6 @@ page 4 (
 
         savedReport primary (
             visibility: primaryDefault
-            name: Primary Report
             view {
                 rowsPerPage: 5
             }
@@ -261,7 +264,6 @@ page 4 (
 
         savedReport primary (
             visibility: primaryDefault
-            name: Primary Report
             view {
                 rowsPerPage: 5
             }
@@ -349,7 +351,6 @@ page 4 (
 
         savedReport primary (
             visibility: primaryDefault
-            name: Primary Report
             view {
                 rowsPerPage: 10
             }

@@ -4,13 +4,17 @@ This document is the authoritative manual setup for native Oracle APEX 26.1 AI A
 
 ## Generative AI Service
 
-In Shared Components, create or select the application default Generative AI Service:
+In Shared Components, select the existing Generative AI Service:
 
 - Provider: OpenAI
-- Model: GPT-5.5
+- Service name: `OPEN AI`
+- Static ID: `OPENAI`
+- Model: `gpt-5.4`
 - Credential: an APEX credential stored outside this repository
 - Temperature: low/conservative
 - Secrets: never store in `AIPA_APP_SETTINGS`
+
+Set `OPEN AI` as the application's default Generative AI Service, or select it explicitly in the Procurement Assistant Agent. The Agent cannot execute until one of these settings is present.
 
 ## Procurement Assistant Agent
 
@@ -18,10 +22,10 @@ Create a Shared Component AI Agent:
 
 - Name: Procurement Assistant Agent
 - Static ID: `procurement_assistant_agent`
-- Service: application default Generative AI Service
+- Service: `OPEN AI` (`OPENAI`), or the application default after it has been set to that service
 - Temperature: `0.1`
-- Response format: JSON Object where supported
-- JSON schema: include `summary`, `findings`, `risk_level`, `recommended_action`, `explanation`, `missing_information`, `approval_route`, `tool_calls_used`, `requires_confirmation`
+- Response format: Text, required by the native Show AI Assistant action
+- Response content: include summary, findings, risk level, recommended action, explanation, missing information, approval route, tools used, and whether confirmation is required
 
 System prompt:
 
@@ -31,7 +35,7 @@ Use application tools for all purchase request data, policy findings, approval r
 Never claim a policy result until the policy findings tool has been called.
 Never submit, approve, reject, or request changes unless the user explicitly confirms the action.
 Business rules come from deterministic PL/SQL packages. Distinguish deterministic findings from AI interpretation.
-Return concise JSON with summary, findings, risk_level, recommended_action, explanation, missing_information, approval_route, tool_calls_used, and requires_confirmation.
+Return a concise response with the summary, findings, risk level, recommended action, explanation, missing information, approval route, tools used, and whether confirmation is required.
 ```
 
 ## Required Tools

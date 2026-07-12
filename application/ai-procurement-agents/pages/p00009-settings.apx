@@ -91,7 +91,6 @@ page 9 (
 
         savedReport primary (
             visibility: primaryDefault
-            name: Primary Report
             view {
                 rowsPerPage: 25
             }

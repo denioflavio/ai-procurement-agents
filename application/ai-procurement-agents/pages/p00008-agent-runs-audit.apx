@@ -24,7 +24,7 @@ page 8 (
                        pr.request_number,
                        r.agent_static_id,
                        r.status,
-                       r.mode,
+                       r.run_mode as mode,
                        r.provider_name,
                        r.model_name,
                        r.started_at,
@@ -190,7 +190,6 @@ page 8 (
 
         savedReport primary (
             visibility: primaryDefault
-            name: Primary Report
             view {
                 rowsPerPage: 25
             }
@@ -318,7 +317,6 @@ page 8 (
 
         savedReport primary (
             visibility: primaryDefault
-            name: Primary Report
             view {
                 rowsPerPage: 25
             }

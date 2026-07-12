@@ -1,5 +1,11 @@
 {
   "workspace": {
     "name": "APEXFROMTHEFIELD"
+  },
+  "app": {
+    "id": 104,
+    "databaseSession": {
+      "parsingSchema": "AIPA"
+    }
   }
 }

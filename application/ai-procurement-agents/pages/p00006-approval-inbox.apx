@@ -169,7 +169,6 @@ page 6 (
 
         savedReport primary (
             visibility: primaryDefault
-            name: Primary Report
             view {
                 rowsPerPage: 25
             }

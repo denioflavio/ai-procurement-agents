@@ -195,7 +195,7 @@ page 2 (
             target: {
                 page: 4
                 items: {
-                    P4_PURCHASE_REQUEST_ID: PURCHASE_REQUEST_ID
+                    P4_PURCHASE_REQUEST_ID: #PURCHASE_REQUEST_ID#
                 }
                 clearCache: 4
             }
@@ -203,7 +203,6 @@ page 2 (
         }
         savedReport primary (
             visibility: primaryDefault
-            name: Primary Report
             view {
                 rowsPerPage: 25
             }

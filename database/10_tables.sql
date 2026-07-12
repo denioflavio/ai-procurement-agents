@@ -133,7 +133,7 @@ create table aipa_agent_runs (
     status varchar2(20) default 'STARTED' not null check (status in ('STARTED','SUCCEEDED','FAILED','MOCKED')),
     model_name varchar2(120),
     provider_name varchar2(80),
-    mode varchar2(20) default 'MOCK' not null check (mode in ('MOCK','LIVE')),
+    run_mode varchar2(20) default 'MOCK' not null check (run_mode in ('MOCK','LIVE')),
     prompt clob,
     response clob,
     raw_response clob,

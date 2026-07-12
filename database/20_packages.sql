@@ -362,6 +362,7 @@ create or replace package body pk_aipa_llm_provider as
         l_route clob;
         l_risk varchar2(10);
         l_summary varchar2(1000);
+        l_recommendation clob;
     begin
         l_findings := pk_aipa_policy_engine.get_findings_json(p_purchase_request_id => p_purchase_request_id);
         l_route := pk_aipa_workflow.get_approval_route_json(p_purchase_request_id => p_purchase_request_id);
@@ -372,17 +373,21 @@ create or replace package body pk_aipa_llm_provider as
           from aipa_purchase_requests
          where purchase_request_id = p_purchase_request_id;
 
-        return json_object(
-            'summary' value l_summary,
-            'findings' value l_findings format json,
-            'risk_level' value l_risk,
-            'recommended_action' value case when l_risk = 'HIGH' then 'REQUEST_CHANGES_OR_ROUTE_FOR_FINANCE' else 'SUBMIT_FOR_APPROVAL' end,
-            'explanation' value 'Mock mode used deterministic policy findings and approval routing from PL/SQL packages.',
-            'missing_information' value '[]' format json,
-            'approval_route' value l_route format json,
-            'tool_calls_used' value '["get_purchase_request_context","get_policy_findings","get_approval_route"]' format json,
-            'requires_confirmation' value case when l_risk = 'HIGH' then 'true' else 'false' end format json
-        returning clob);
+        select json_object(
+                   'summary' value l_summary,
+                   'findings' value l_findings format json,
+                   'risk_level' value l_risk,
+                   'recommended_action' value case when l_risk = 'HIGH' then 'REQUEST_CHANGES_OR_ROUTE_FOR_FINANCE' else 'SUBMIT_FOR_APPROVAL' end,
+                   'explanation' value 'Mock mode used deterministic policy findings and approval routing from PL/SQL packages.',
+                   'missing_information' value '[]' format json,
+                   'approval_route' value l_route format json,
+                   'tool_calls_used' value '["get_purchase_request_context","get_policy_findings","get_approval_route"]' format json,
+                   'requires_confirmation' value case when l_risk = 'HIGH' then 'Y' else 'N' end
+               returning clob)
+          into l_recommendation
+          from dual;
+
+        return l_recommendation;
     end generate_mock_recommendation;
 end pk_aipa_llm_provider;
 /
@@ -457,9 +462,9 @@ create or replace package body pk_aipa_agent_orchestration as
         end if;
 
         insert into aipa_agent_runs (
-            purchase_request_id, agent_static_id, status, model_name, provider_name, mode, prompt
+            purchase_request_id, agent_static_id, status, model_name, provider_name, run_mode, prompt
         ) values (
-            p_purchase_request_id, p_agent_static_id, 'STARTED', 'GPT-5.5', 'OpenAI',
+            p_purchase_request_id, p_agent_static_id, 'STARTED', 'gpt-5.4', 'OpenAI',
             l_mode,
             p_prompt
         )
@@ -490,6 +495,8 @@ create or replace package body pk_aipa_agent_orchestration as
         l_route clob;
         l_response clob;
         l_risk varchar2(10);
+        l_parameters clob;
+        l_error_message varchar2(4000);
     begin
         l_run_id := record_run_start(
             p_purchase_request_id => p_purchase_request_id,
@@ -498,13 +505,16 @@ create or replace package body pk_aipa_agent_orchestration as
         );
 
         l_context := get_purchase_request_context_json(p_purchase_request_id => p_purchase_request_id);
-        record_tool_call(l_run_id, 'get_purchase_request_context', json_object('purchase_request_id' value p_purchase_request_id returning clob), l_context, 'MOCKED');
+        select json_object('purchase_request_id' value p_purchase_request_id returning clob)
+          into l_parameters
+          from dual;
+        record_tool_call(l_run_id, 'get_purchase_request_context', l_parameters, l_context, 'MOCKED');
 
         l_findings := pk_aipa_policy_engine.get_findings_json(p_purchase_request_id => p_purchase_request_id);
-        record_tool_call(l_run_id, 'get_policy_findings', json_object('purchase_request_id' value p_purchase_request_id returning clob), l_findings, 'MOCKED');
+        record_tool_call(l_run_id, 'get_policy_findings', l_parameters, l_findings, 'MOCKED');
 
         l_route := pk_aipa_workflow.get_approval_route_json(p_purchase_request_id => p_purchase_request_id);
-        record_tool_call(l_run_id, 'get_approval_route', json_object('purchase_request_id' value p_purchase_request_id returning clob), l_route, 'MOCKED');
+        record_tool_call(l_run_id, 'get_approval_route', l_parameters, l_route, 'MOCKED');
 
         l_response := pk_aipa_llm_provider.generate_mock_recommendation(p_purchase_request_id => p_purchase_request_id);
         l_risk := json_value(l_response, '$.risk_level');
@@ -519,7 +529,7 @@ create or replace package body pk_aipa_agent_orchestration as
             json_value(l_response, '$.recommended_action'),
             json_value(l_response, '$.explanation'),
             l_response,
-            case when json_value(l_response, '$.requires_confirmation') = 'true' then 'Y' else 'N' end
+            case when json_value(l_response, '$.requires_confirmation') = 'Y' then 'Y' else 'N' end
         );
 
         update aipa_purchase_requests
@@ -542,9 +552,10 @@ create or replace package body pk_aipa_agent_orchestration as
     exception
         when others then
             if l_run_id is not null then
+                l_error_message := sqlerrm;
                 update aipa_agent_runs
                    set status = 'FAILED',
-                       error_message = sqlerrm,
+                       error_message = l_error_message,
                        ended_at = systimestamp
                  where agent_run_id = l_run_id;
             end if;
@@ -567,17 +578,20 @@ create or replace package body pk_aipa_agent_orchestration as
         return l_json;
     exception
         when no_data_found then
-            return json_object(
-                'summary' value 'No AI review has been run yet.',
-                'findings' value '[]' format json,
-                'risk_level' value 'LOW',
-                'recommended_action' value 'RUN_AI_REVIEW',
-                'explanation' value 'Run AI Review to create a deterministic recommendation.',
-                'missing_information' value '[]' format json,
-                'approval_route' value '[]' format json,
-                'tool_calls_used' value '[]' format json,
-                'requires_confirmation' value 'false' format json
-            returning clob);
+            select json_object(
+                       'summary' value 'No AI review has been run yet.',
+                       'findings' value '[]' format json,
+                       'risk_level' value 'LOW',
+                       'recommended_action' value 'RUN_AI_REVIEW',
+                       'explanation' value 'Run AI Review to create a deterministic recommendation.',
+                       'missing_information' value '[]' format json,
+                       'approval_route' value '[]' format json,
+                       'tool_calls_used' value '[]' format json,
+                       'requires_confirmation' value 'N'
+                   returning clob)
+              into l_json
+              from dual;
+            return l_json;
     end get_latest_recommendation_json;
 end pk_aipa_agent_orchestration;
 /
@@ -649,7 +663,7 @@ create or replace package body pk_aipa_seed as
         insert into aipa_approval_rules (rule_name, min_amount, risk_level, approver_id, step_order) values ('High risk procurement review',0,'HIGH',l_procurement,1);
 
         insert into aipa_app_settings (setting_name, setting_value, setting_description) values ('MOCK_MODE_ENABLED','Y','Use deterministic mock recommendations for public demos.');
-        insert into aipa_app_settings (setting_name, setting_value, setting_description) values ('MODEL_NAME','GPT-5.5','Default model name for live mode documentation.');
+        insert into aipa_app_settings (setting_name, setting_value, setting_description) values ('MODEL_NAME','gpt-5.4','Model configured in the OPENAI Generative AI Service.');
         insert into aipa_app_settings (setting_name, setting_value, setting_description) values ('PROVIDER_NAME','OpenAI','Default live provider.');
         insert into aipa_app_settings (setting_name, setting_value, setting_description) values ('CREDENTIAL_STATIC_ID','','Optional APEX credential static ID. Secrets are never stored here.');
 
